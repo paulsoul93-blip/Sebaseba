@@ -1,0 +1,631 @@
+import React, { useState, useEffect } from 'react';
+import { Dna, Brain, Activity, Droplets, X, Calendar, Clock, Zap, Star, ChevronDown, Fingerprint, Cpu, BatteryCharging, Coffee, ShieldAlert } from 'lucide-react';
+
+export default function App() {
+  const [scrollY, setScrollY] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHoveringBtn, setIsHoveringBtn] = useState(false);
+
+  // Booking Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(0);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [isSuccess, setIsSuccess] = useState(false);
+  
+  // FAQ State
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const dates = ['Dziś', 'Jutro', 'Środa', 'Czwartek', 'Piątek'];
+  const times = ['09:00 - 11:00', '11:30 - 13:30', '14:00 - 16:00', '16:30 - 18:30'];
+  const hourlyRate = 450; // PLN/h
+  const sessionHours = 2;
+
+  const faqs = [
+    { q: "Czy Sebastian potrzebuje snu?", a: "Sen jest dla słabych. On wchodzi w tryb stand-by tylko po to, żeby dać serwerom czas na ostudzenie." },
+    { q: "W jakich technologiach pracuje?", a: "Rozpierdala każdą. Jeśli czegoś nie umie, pisze własny framework w trakcie przerwy na kawę." },
+    { q: "Czy mogę go zwolnić?", a: "To on zwalnia Twoje problemy. Jak skończy, sam odchodzi szukając kolejnego projektu do zdemolowania." },
+    { q: "Co jeśli w firmie jest pożar?", a: "Wchodzi w ogień, wyrzuca stary kod przez okno i stawia wszystko od zera szybciej, niż szef zdąży zapytać 'kto za to zapłaci'." }
+  ];
+
+  const metrics = [
+    { label: "Bezwzględna Skuteczność", value: 99.9, icon: <ShieldAlert className="w-5 h-5" />, color: "from-cyan-400 to-blue-600" },
+    { label: "Prędkość Demolki Backlogu", value: 100.0, icon: <Cpu className="w-5 h-5" />, color: "from-purple-400 to-indigo-600" },
+    { label: "Odporność na Korpo-Bullshit", value: 100.0, icon: <BatteryCharging className="w-5 h-5" />, color: "from-pink-400 to-rose-600" },
+    { label: "Poziom Rozpierdolu Systemu", value: 99.9, icon: <Coffee className="w-5 h-5" />, color: "from-emerald-400 to-teal-600" },
+  ];
+
+  // Global event listeners
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    const handleMouseMove = (e) => setMousePos({ x: e.clientX, y: e.clientY });
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
+  const handleBookingConfirm = () => {
+    setIsSuccess(true);
+    setTimeout(() => {
+      setIsModalOpen(false);
+      setIsSuccess(false);
+      setSelectedTime(null);
+    }, 3000);
+  };
+
+  // Generate random particles
+  const particles = Array.from({ length: 30 }).map((_, i) => ({
+    id: i,
+    size: Math.random() * 6 + 2,
+    left: Math.random() * 100,
+    duration: Math.random() * 15 + 10,
+    delay: Math.random() * 5
+  }));
+
+  return (
+    <div className="relative min-h-screen bg-[#05080f] text-white overflow-x-hidden selection:bg-pink-500 selection:text-white font-sans cursor-none">
+      
+      {/* --- INJECTED STYLES FOR EXTREME ANIMATIONS --- */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;700;900&family=Playfair+Display:ital,wght@0,400;0,600;0,900;1,400;1,600;1,900&display=swap');
+
+        :root {
+          --font-precision: 'Montserrat', sans-serif;
+          --font-fluid: 'Playfair Display', serif;
+        }
+
+        .font-precision { font-family: var(--font-precision); }
+        .font-fluid { font-family: var(--font-fluid); }
+
+        /* Custom Cursor Override for children */
+        * { cursor: none !important; }
+
+        /* Morphing Blobs */
+        @keyframes morph {
+          0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(0deg) scale(1); }
+          34% { border-radius: 70% 30% 50% 50% / 30% 30% 70% 70%; transform: rotate(120deg) scale(1.05); }
+          67% { border-radius: 100% 60% 60% 100% / 100% 100% 60% 60%; transform: rotate(240deg) scale(0.95); }
+          100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; transform: rotate(360deg) scale(1); }
+        }
+
+        @keyframes breathe {
+          0%, 100% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.02); }
+        }
+
+        /* Particle Floating */
+        @keyframes floatUp {
+          0% { transform: translateY(100vh) scale(0); opacity: 0; }
+          20% { opacity: 0.8; scale(1); }
+          80% { opacity: 0.8; }
+          100% { transform: translateY(-20vh) scale(0.5); opacity: 0; }
+        }
+
+        /* Hero Entrances */
+        @keyframes slideUpFade {
+          0% { opacity: 0; transform: translateY(60px) scale(0.95); filter: blur(10px); }
+          100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+        }
+
+        /* Holographic Grid Pan */
+        @keyframes gridPan {
+          0% { transform: perspective(1000px) rotateX(60deg) translateY(0); }
+          100% { transform: perspective(1000px) rotateX(60deg) translateY(50px); }
+        }
+
+        /* Mega Footer Text Pan */
+        @keyframes textPan {
+          0% { background-position: 0% center; }
+          100% { background-position: 200% center; }
+        }
+        
+        /* Bar Fill Animation */
+        @keyframes fillBar {
+          0% { width: 0%; opacity: 0; }
+          100% { opacity: 1; }
+        }
+
+        .blob {
+          animation: morph 15s ease-in-out infinite both alternate, breathe 8s ease-in-out infinite;
+          transform-origin: center center;
+        }
+
+        .blob-delayed {
+          animation: morph 18s ease-in-out infinite both alternate-reverse, breathe 10s ease-in-out infinite;
+          animation-delay: 2s;
+        }
+
+        .animate-slide-up-1 { animation: slideUpFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-slide-up-2 { animation: slideUpFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards; opacity: 0; }
+        .animate-slide-up-3 { animation: slideUpFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; opacity: 0; }
+        .animate-slide-up-4 { animation: slideUpFade 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards; opacity: 0; }
+
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-float-reverse { animation: floatReverse 7s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(3deg); } }
+        @keyframes floatReverse { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(15px) rotate(-3deg); } }
+        
+        .animate-marquee { animation: marquee 20s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        .mega-text-gradient {
+          background: linear-gradient(90deg, #00f2fe, #4facfe, #f093fb, #f5576c, #00f2fe);
+          background-size: 200% auto;
+          color: transparent;
+          -webkit-background-clip: text;
+          background-clip: text;
+          animation: textPan 6s linear infinite;
+        }
+
+        .grid-floor {
+          background-image: 
+            linear-gradient(to right, rgba(0, 242, 254, 0.1) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 242, 254, 0.1) 1px, transparent 1px);
+          background-size: 50px 50px;
+          animation: gridPan 3s linear infinite;
+        }
+
+        .faq-content {
+          transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+          max-height: 0; opacity: 0; overflow: hidden;
+        }
+        .faq-content.open { max-height: 200px; opacity: 1; }
+
+        .gooey-container { filter: url('#goo'); }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 8, 68, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 242, 254, 0.8); }
+
+        /* Glitch effect on hover for extreme elements */
+        .cyber-glitch:hover {
+          animation: glitch-anim 0.3s infinite;
+        }
+        @keyframes glitch-anim {
+          0% { transform: translate(0) }
+          20% { transform: translate(-2px, 2px) }
+          40% { transform: translate(-2px, -2px) }
+          60% { transform: translate(2px, 2px) }
+          80% { transform: translate(2px, -2px) }
+          100% { transform: translate(0) }
+        }
+      `}</style>
+
+      {/* --- CUSTOM NEON CURSOR --- */}
+      <div 
+        className="fixed top-0 left-0 w-2 h-2 bg-white rounded-full pointer-events-none z-[9999] mix-blend-screen shadow-[0_0_10px_#fff]"
+        style={{ transform: `translate(${mousePos.x - 4}px, ${mousePos.y - 4}px)` }}
+      />
+      <div 
+        className={`fixed top-0 left-0 border rounded-full pointer-events-none z-[9998] transition-all duration-300 ease-out flex items-center justify-center mix-blend-screen ${isHoveringBtn ? 'w-20 h-20 border-pink-400 bg-pink-500/10 scale-150' : 'w-10 h-10 border-cyan-400/50 scale-100'}`}
+        style={{ transform: `translate(${mousePos.x - (isHoveringBtn ? 40 : 20)}px, ${mousePos.y - (isHoveringBtn ? 40 : 20)}px)` }}
+      >
+        <div className={`w-full h-full border border-dashed rounded-full animate-spin-slow ${isHoveringBtn ? 'border-pink-300/50 animate-spin' : 'border-cyan-300/30'}`} style={{ animationDuration: '4s' }} />
+      </div>
+
+      {/* SVG Filter for Liquid "Gooey" effects */}
+      <svg style={{ position: 'absolute', width: 0, height: 0 }} aria-hidden="true">
+        <filter id="goo">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+          <feBlend in="SourceGraphic" in2="goo" />
+        </filter>
+      </svg>
+
+      {/* --- DYNAMIC BACKGROUND ENVIRONMENT --- */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-80">
+        
+        {/* Floating Particles (Spores) */}
+        {particles.map(p => (
+          <div 
+            key={p.id}
+            className="absolute bg-cyan-300/30 rounded-full blur-[1px]"
+            style={{
+              width: `${p.size}px`, height: `${p.size}px`,
+              left: `${p.left}%`,
+              bottom: '-20px',
+              animation: `floatUp ${p.duration}s linear infinite`,
+              animationDelay: `${p.delay}s`,
+              boxShadow: '0 0 10px rgba(0,242,254,0.5)'
+            }}
+          />
+        ))}
+
+        {/* Bioluminescent Cyan Bloom */}
+        <div 
+          className="absolute blob bg-gradient-to-tr from-cyan-600/40 to-blue-900/40 blur-[120px]"
+          style={{ width: '60vw', height: '60vw', left: '-10vw', top: '-10vw', transform: `translate(${scrollY * 0.15}px, ${scrollY * 0.08}px)` }}
+        />
+        {/* Deep Sea Magenta/Ink Bloom */}
+        <div 
+          className="absolute blob-delayed bg-gradient-to-br from-pink-600/30 via-purple-900/40 to-black blur-[150px]"
+          style={{ width: '80vw', height: '80vw', right: '-20vw', bottom: '-30vw', transform: `translate(${-scrollY * 0.1}px, ${-scrollY * 0.15}px)` }}
+        />
+        {/* Interactive Mouse Flashlight */}
+        <div 
+          className="absolute rounded-full bg-cyan-300/15 blur-[100px] transition-transform duration-700 ease-out"
+          style={{ width: '400px', height: '400px', transform: `translate(${mousePos.x - 200}px, ${mousePos.y - 200}px)` }}
+        />
+      </div>
+
+      {/* --- CONTENT LAYER --- */}
+      <div className="relative z-10 w-full flex flex-col items-center">
+
+        {/* SECTION 1: THE INHALE (Wonder) & ADVERTISING HERO */}
+        <section className="min-h-screen w-full flex flex-col items-center justify-center px-6 relative overflow-hidden">
+          
+          <div className="absolute inset-0 max-w-7xl mx-auto pointer-events-none hidden md:block">
+            <div className="absolute top-[20%] left-[5%] animate-float bg-black/40 border border-cyan-400/50 backdrop-blur-xl rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(0,242,254,0.3)] transform -rotate-3 z-20">
+              <div className="bg-cyan-500/20 p-3 rounded-xl border border-cyan-400/30"><Activity className="w-6 h-6 text-cyan-300 animate-pulse" /></div>
+              <div>
+                <p className="font-precision text-[10px] text-cyan-200 uppercase tracking-[0.2em]">Status Misji</p>
+                <p className="font-fluid italic text-xl text-white">Żądny Krwi (Biznesowej)</p>
+              </div>
+            </div>
+
+            <div className="absolute top-[65%] right-[8%] animate-float-reverse bg-black/40 border border-pink-500/50 backdrop-blur-xl rounded-2xl p-4 flex items-center gap-4 shadow-[0_0_30px_rgba(255,8,68,0.3)] transform rotate-3 z-20">
+              <div className="bg-pink-500/20 p-3 rounded-xl border border-pink-400/30"><Zap className="w-6 h-6 text-pink-300" /></div>
+              <div>
+                <p className="font-precision text-[10px] text-pink-200 uppercase tracking-[0.2em]">Tryb Pracy</p>
+                <p className="font-fluid italic text-xl text-white cyber-glitch">Overclocking Aktywny</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-5xl mx-auto text-center flex flex-col items-center z-10">
+            <div className="animate-slide-up-1 gooey-container flex flex-col items-center">
+              <div className="w-20 h-20 rounded-full border border-cyan-500/30 flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(0,242,254,0.2)] bg-black/50 backdrop-blur-sm relative overflow-hidden">
+                <div className="absolute inset-0 bg-cyan-400/20 animate-ping" style={{ animationDuration: '3s' }} />
+                <Dna className="w-10 h-10 text-cyan-400 animate-pulse" strokeWidth={1.5} />
+              </div>
+            </div>
+            
+            <h1 className="animate-slide-up-2 font-fluid text-6xl md:text-8xl lg:text-9xl font-black tracking-tight mb-4 leading-none text-transparent bg-clip-text bg-gradient-to-br from-white via-cyan-100 to-gray-500 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
+              Rozpierdol <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 drop-shadow-[0_0_30px_rgba(0,242,254,0.6)]">System.</span>
+            </h1>
+            <h2 className="animate-slide-up-3 font-precision text-2xl md:text-4xl uppercase tracking-[0.3em] font-light text-white/80 mb-10">
+              Wynajmij Bestię.
+            </h2>
+            
+            <p className="animate-slide-up-3 font-precision text-lg md:text-xl font-light tracking-wide text-white/60 max-w-2xl mb-14 leading-relaxed">
+              Skończ z wymówkami i głaskaniem się po głowach. Sebastian wchodzi i robi porządek. To ostateczny niszczyciel deadlinów, który wyczyści Twój backlog zanim zdążysz mrugnąć.
+            </p>
+            
+            <div 
+              className="animate-slide-up-4 gooey-container relative"
+              onMouseEnter={() => setIsHoveringBtn(true)}
+              onMouseLeave={() => setIsHoveringBtn(false)}
+            >
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="group relative px-12 py-6 font-precision tracking-[0.3em] text-sm uppercase transition-all duration-500 overflow-hidden"
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-cyan-600 to-purple-600 rounded-[40%_60%_70%_30%/40%_50%_60%_50%] transition-all duration-500 group-hover:scale-110 group-hover:rounded-[70%_30%_50%_50%/30%_30%_70%_70%] opacity-80 group-hover:opacity-100" />
+                <div className="absolute inset-0 border-2 border-white/30 rounded-[40%_60%_70%_30%/40%_50%_60%_50%] transition-all duration-700 group-hover:rotate-180 shadow-[0_0_40px_rgba(0,242,254,0.5)] group-hover:shadow-[0_0_80px_rgba(168,85,247,0.8)]" />
+                <span className="relative z-10 text-white font-bold drop-shadow-[0_0_8px_rgba(255,255,255,1)] flex items-center gap-3">
+                  <Fingerprint className="w-5 h-5 animate-pulse" /> Wypuść Krakena
+                </span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="absolute bottom-0 left-0 w-full overflow-hidden bg-black/60 border-y border-cyan-500/30 py-4 backdrop-blur-xl z-20">
+            <div className="flex w-[200%] animate-marquee whitespace-nowrap">
+              {[1, 2].map((i) => (
+                <div key={i} className="flex-1 flex justify-around items-center font-precision text-xs uppercase tracking-[0.4em] text-cyan-300/90 font-bold">
+                  <span className="flex items-center gap-3"><Activity className="w-5 h-5 text-pink-500 drop-shadow-[0_0_8px_rgba(255,8,68,0.8)]"/> NISZCZYCIEL KPI</span>
+                  <span className="text-white/20">///</span>
+                  <span className="flex items-center gap-3"><Clock className="w-5 h-5 text-cyan-500 drop-shadow-[0_0_8px_rgba(0,242,254,0.8)]"/> ROBOTA ZROBIONA W MOMENT</span>
+                  <span className="text-white/20">///</span>
+                  <span className="flex items-center gap-3"><Brain className="w-5 h-5 text-purple-500 drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]"/> ZERO LITOŚCI DLA BŁĘDÓW</span>
+                  <span className="text-white/20">///</span>
+                  <span className="flex items-center gap-3"><Dna className="w-5 h-5 text-emerald-500 drop-shadow-[0_0_8px_rgba(16,185,129,0.8)]"/> CZYSTY ROZPIERDOL</span>
+                  <span className="text-white/20">///</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION 1.5: BIO-METRICS (Specs) */}
+        <section className="py-32 w-full px-6 md:px-12 max-w-5xl mx-auto relative z-10">
+          <div className="text-center mb-20">
+            <h2 className="font-fluid text-4xl md:text-6xl text-white mb-4 drop-shadow-[0_0_20px_rgba(255,255,255,0.2)]">
+              Statystyki <span className="italic text-purple-400">Rozpierdolu</span>
+            </h2>
+            <p className="font-precision text-white/50 tracking-[0.2em] uppercase text-sm">Bezwzględna maszyna do zamykania tasków</p>
+          </div>
+
+          <div className="space-y-12">
+            {metrics.map((metric, idx) => (
+              <div key={idx} className="relative group">
+                <div className="flex justify-between items-end mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white/5 p-2 rounded-lg border border-white/10 group-hover:border-white/30 transition-colors">
+                      {metric.icon}
+                    </div>
+                    <span className="font-precision text-sm md:text-lg text-white/80 uppercase tracking-wider">{metric.label}</span>
+                  </div>
+                  <span className="font-fluid text-2xl md:text-4xl italic text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                    {metric.value}%
+                  </span>
+                </div>
+                
+                {/* The Bar */}
+                <div className="h-4 w-full bg-black/50 border border-white/10 rounded-full overflow-hidden relative shadow-inner">
+                  {/* Glowing progress fill */}
+                  <div 
+                    className={`h-full bg-gradient-to-r ${metric.color} rounded-full relative shadow-[0_0_20px_currentColor]`}
+                    style={{ width: `${metric.value}%`, animation: `fillBar 2s cubic-bezier(0.16, 1, 0.3, 1) forwards` }}
+                  >
+                    {/* Inner highlight */}
+                    <div className="absolute top-0 left-0 w-full h-[2px] bg-white/40" />
+                    {/* Pulse line at the end */}
+                    <div className="absolute top-0 right-0 w-2 h-full bg-white animate-pulse shadow-[0_0_10px_#fff]" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 2: THE CIRCULATION (Trust) */}
+        <section className="py-24 w-full px-6 md:px-12 max-w-7xl mx-auto relative z-10">
+          <div className="flex flex-col md:flex-row flex-wrap justify-center items-stretch gap-8 lg:gap-12">
+            {[
+              { icon: <Dna className="w-12 h-12" />, colorClass: "text-cyan-400", bgGlow: "bg-cyan-500/20", borderHover: "group-hover:border-cyan-400/50", title: "Egzekucja Bez Pytań", desc: "Wchodzi do projektu, nie pyta o sens, pyta kogo zoptymalizować. Zostawia po sobie zgliszcza dawnych problemów." },
+              { icon: <Brain className="w-12 h-12" />, colorClass: "text-purple-400", bgGlow: "bg-purple-500/20", borderHover: "group-hover:border-purple-400/50", title: "Zimny Skurwiel", desc: "Serwery płoną? On odpala terminal, pije czarną kawę i stawia wszystko na nowo, nie ruszając nawet powieki." },
+              { icon: <Activity className="w-12 h-12" />, colorClass: "text-pink-400", bgGlow: "bg-pink-500/20", borderHover: "group-hover:border-pink-400/50", title: "Hiper-Demolka", desc: "Zjada backlogi na śniadanie, popija ASAP-ami. Optymalizuje procesy z siłą, przez którą konkurencja płacze." }
+            ].map((card, idx) => (
+              <div 
+                key={idx} 
+                className="w-full md:w-[30%] group relative"
+                onMouseEnter={() => setIsHoveringBtn(true)}
+                onMouseLeave={() => setIsHoveringBtn(false)}
+              >
+                {/* Extreme Hover Glow Backdrop */}
+                <div className={`absolute inset-0 ${card.bgGlow} blur-2xl rounded-[40px] opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+                
+                <div className={`relative h-full p-10 bg-black/40 backdrop-blur-xl border border-white/10 transition-all duration-500 rounded-[30px] group-hover:-translate-y-4 group-hover:bg-white/5 ${card.borderHover} overflow-hidden shadow-2xl`}>
+                  {/* Internal glare effect */}
+                  <div className="absolute top-0 left-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-[150%] group-hover:translate-x-[50%] transition-transform duration-1000 ease-in-out" />
+                  
+                  <div className={`${card.colorClass} mb-8 opacity-70 group-hover:scale-110 group-hover:opacity-100 transition-all duration-500 drop-shadow-[0_0_15px_currentColor]`}>
+                    {card.icon}
+                  </div>
+                  <h3 className="font-fluid text-2xl md:text-3xl text-white mb-4 font-bold">{card.title}</h3>
+                  <p className="font-precision text-white/60 text-sm leading-loose font-light">
+                    {card.desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* SECTION 4: EXTREME FAQ (Protokół Wątpliwości) */}
+        <section className="py-24 w-full px-6 md:px-12 max-w-4xl mx-auto relative z-10">
+          <div className="text-center mb-20 relative">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-600/20 blur-[100px] rounded-full pointer-events-none" />
+            <h2 className="font-fluid text-5xl md:text-7xl text-white mb-6 relative z-10 drop-shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+              Pytania od <span className="italic text-purple-400">Mięczaków</span>
+            </h2>
+            <p className="font-precision text-white/50 text-xs md:text-sm tracking-[0.3em] uppercase relative z-10">Koniec wymówek</p>
+          </div>
+
+          <div className="space-y-6 relative z-10">
+            {faqs.map((faq, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div 
+                  key={idx}
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  onMouseEnter={() => setIsHoveringBtn(true)}
+                  onMouseLeave={() => setIsHoveringBtn(false)}
+                  className={`group relative overflow-hidden rounded-3xl border transition-all duration-500 backdrop-blur-md ${
+                    isOpen 
+                      ? 'bg-purple-900/40 border-purple-400/80 shadow-[0_0_50px_rgba(168,85,247,0.4)] scale-[1.03] z-20' 
+                      : 'bg-black/40 border-white/10 hover:border-cyan-400/50 hover:bg-white/5 z-10'
+                  }`}
+                >
+                  <div className={`absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-cyan-400 to-purple-500 transition-opacity duration-500 shadow-[0_0_20px_#fff] ${isOpen ? 'opacity-100' : 'opacity-0'}`} />
+                  
+                  <div className="p-6 md:p-8 flex justify-between items-center relative">
+                    <h4 className={`font-precision text-lg md:text-xl font-medium transition-colors duration-300 pr-8 ${isOpen ? 'text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]' : 'text-white/80 group-hover:text-cyan-200'}`}>
+                      {faq.q}
+                    </h4>
+                    <div className={`w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center border transition-all duration-500 ${isOpen ? 'bg-white text-purple-900 rotate-180 shadow-[0_0_20px_#fff]' : 'border-white/20 text-white group-hover:bg-cyan-500/20 group-hover:border-cyan-400/50 group-hover:text-cyan-300'}`}>
+                      <ChevronDown className="w-6 h-6" />
+                    </div>
+                  </div>
+                  
+                  <div className={`faq-content px-6 md:px-8 pb-6 md:pb-8 relative ${isOpen ? 'open' : ''}`}>
+                    <div className="w-full h-[1px] bg-gradient-to-r from-cyan-500 to-transparent mb-6 opacity-50" />
+                    <p className="font-precision text-white/70 font-light text-base md:text-lg leading-relaxed">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        {/* SECTION 5: MEGA FOOTER (Terminal Centralny) */}
+        <footer className="w-full relative z-10 overflow-hidden border-t border-cyan-500/30 pt-40 pb-12 mt-32 bg-black">
+          
+          {/* Holographic 3D Grid Floor */}
+          <div className="absolute bottom-0 left-0 w-full h-[150%] grid-floor origin-bottom opacity-40 pointer-events-none" />
+          
+          <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-pink-500 to-transparent shadow-[0_0_30px_rgba(255,8,68,1)]" />
+          
+          <div className="max-w-7xl mx-auto px-6 flex flex-col items-center text-center relative z-10">
+            
+            <p className="font-precision text-cyan-400 text-xs md:text-sm tracking-[0.5em] uppercase mb-10 font-bold bg-black/50 px-6 py-2 rounded-full border border-cyan-500/30 backdrop-blur-md">
+              Koniec Pierdolenia. Czas na Wyniki.
+            </p>
+            
+            {/* Massive Animated Text */}
+            <h1 className="font-fluid italic font-black text-[15vw] leading-none mb-20 mega-text-gradient select-none drop-shadow-[0_0_80px_rgba(0,242,254,0.4)] tracking-tighter">
+              SEBASTIAN.
+            </h1>
+
+            {/* Extreme Button */}
+            <div 
+              className="mb-32 relative"
+              onMouseEnter={() => setIsHoveringBtn(true)}
+              onMouseLeave={() => setIsHoveringBtn(false)}
+            >
+              <button 
+                onClick={() => setIsModalOpen(true)}
+                className="group relative w-56 h-56 md:w-72 md:h-72 flex items-center justify-center transition-all duration-700 hover:scale-110"
+              >
+                {/* Nuclear glow */}
+                <div className="absolute inset-0 bg-pink-600/30 rounded-full blur-3xl animate-ping opacity-50" style={{ animationDuration: '1.5s' }} />
+                {/* Rotating blob border */}
+                <div className="absolute inset-[-10px] bg-gradient-to-tr from-cyan-400 via-purple-500 to-pink-500 rounded-full blur-md blob group-hover:rotate-180 transition-transform duration-[2000ms]" />
+                
+                {/* Core */}
+                <div className="relative z-10 w-full h-full bg-black rounded-full border-2 border-pink-400/80 flex flex-col items-center justify-center shadow-inset-2xl group-hover:border-white transition-all duration-500 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                  <Zap className="w-10 h-10 text-pink-400 mb-3 group-hover:text-white group-hover:animate-bounce drop-shadow-[0_0_15px_currentColor]" />
+                  <span className="font-precision uppercase tracking-[0.2em] text-sm md:text-base text-pink-100 font-bold group-hover:text-white transition-colors duration-300 drop-shadow-[0_0_10px_currentColor]">
+                    Zatrudnij<br/>Maszynę
+                  </span>
+                </div>
+              </button>
+            </div>
+
+            {/* Legal */}
+            <div className="w-full flex flex-col md:flex-row justify-between items-center border-t border-white/10 pt-10 font-precision text-[10px] md:text-xs text-white/40 tracking-[0.2em] uppercase gap-6 bg-black/80 backdrop-blur-md p-6 rounded-2xl">
+              <p>© 2026 Symbiosa Corp. Nikt nie robi tego lepiej.</p>
+              <div className="flex gap-6 md:gap-10">
+                <a href="#" className="hover:text-cyan-400 hover:drop-shadow-[0_0_10px_rgba(0,242,254,0.8)] transition-all">Szyfrowanie End-to-End</a>
+                <a href="#" className="hover:text-pink-400 hover:drop-shadow-[0_0_10px_rgba(255,8,68,0.8)] transition-all">Regulamin Demolki</a>
+              </div>
+            </div>
+
+          </div>
+        </footer>
+
+      </div>
+
+      {/* --- BOOKING MODAL (Glassmorphism Extreme) --- */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center px-4 font-precision">
+          <div 
+            className="absolute inset-0 bg-black/90 backdrop-blur-2xl transition-opacity duration-500"
+            onClick={() => !isSuccess && setIsModalOpen(false)}
+          />
+          
+          <div className="relative w-full max-w-xl bg-black/50 border border-white/20 rounded-[40px] p-8 md:p-12 shadow-[0_0_100px_rgba(0,242,254,0.2)] overflow-hidden animate-slide-up-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-pink-500/10 pointer-events-none" />
+            <div className="absolute -top-32 -right-32 w-80 h-80 bg-cyan-500/20 blur-[80px] rounded-full pointer-events-none" />
+            
+            {!isSuccess && (
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-6 right-6 text-white/50 hover:text-white bg-white/5 hover:bg-pink-500/50 p-2 rounded-full transition-all z-10 border border-white/10 hover:border-pink-400 hover:shadow-[0_0_15px_rgba(255,8,68,0.5)]"
+                onMouseEnter={() => setIsHoveringBtn(true)}
+                onMouseLeave={() => setIsHoveringBtn(false)}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+
+            {isSuccess ? (
+              <div className="relative z-10 text-center py-16 flex flex-col items-center">
+                <div className="w-24 h-24 bg-gradient-to-tr from-cyan-500 to-purple-600 rounded-full flex items-center justify-center mb-8 shadow-[0_0_50px_rgba(0,242,254,0.6)] animate-bounce">
+                  <Star className="w-12 h-12 text-white" />
+                </div>
+                <h3 className="font-fluid text-4xl text-white mb-4 font-bold drop-shadow-[0_0_10px_#fff]">Rozpierdol Zainicjowany</h3>
+                <p className="text-cyan-200 font-light leading-relaxed tracking-wide text-lg">
+                  Integracja Sebastiana potwierdzona. Konkurencja może już zacząć pakować walizki.
+                </p>
+              </div>
+            ) : (
+              <div className="relative z-10">
+                <h3 className="font-fluid text-4xl md:text-5xl text-white mb-2 font-bold">
+                  Wynajmij <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400">Sebastiana</span>
+                </h3>
+                <p className="text-white/50 tracking-widest uppercase text-xs mb-10">Kupujesz czysty sukces, nie roboczogodziny</p>
+
+                <div className="mb-8">
+                  <div className="flex items-center text-cyan-300 mb-4 text-xs font-bold tracking-[0.2em] uppercase">
+                    <Calendar className="w-4 h-4 mr-3" /> Wybierz dobę cyklu
+                  </div>
+                  <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                    {dates.map((date, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedDate(idx)}
+                        onMouseEnter={() => setIsHoveringBtn(true)}
+                        onMouseLeave={() => setIsHoveringBtn(false)}
+                        className={`flex-shrink-0 px-6 py-4 rounded-2xl border transition-all duration-300 font-bold tracking-wide ${
+                          selectedDate === idx 
+                            ? 'bg-cyan-500/30 border-cyan-300 text-white shadow-[0_0_20px_rgba(0,242,254,0.5)] scale-105' 
+                            : 'bg-black/40 border-white/10 text-white/50 hover:bg-white/10 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        {date}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mb-10">
+                  <div className="flex items-center text-pink-300 mb-4 text-xs font-bold tracking-[0.2em] uppercase">
+                    <Clock className="w-4 h-4 mr-3" /> Zasięg operacyjny (2h)
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    {times.map((time, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedTime(idx)}
+                        onMouseEnter={() => setIsHoveringBtn(true)}
+                        onMouseLeave={() => setIsHoveringBtn(false)}
+                        className={`py-4 rounded-2xl border transition-all duration-300 font-bold tracking-wide ${
+                          selectedTime === idx 
+                            ? 'bg-pink-600/30 border-pink-400 text-white shadow-[0_0_20px_rgba(255,8,68,0.5)] scale-105' 
+                            : 'bg-black/40 border-white/10 text-white/50 hover:bg-white/10 hover:border-white/30 hover:text-white'
+                        }`}
+                      >
+                        {time}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-8 border-t border-white/10 flex items-center justify-between">
+                  <div>
+                    <p className="text-white/40 text-[10px] uppercase tracking-[0.3em] mb-2 font-bold">Autoryzacja Środków</p>
+                    <p className="text-3xl md:text-4xl text-white font-black drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+                      {sessionHours * hourlyRate} <span className="text-lg text-pink-400 italic">PLN</span>
+                    </p>
+                  </div>
+                  <button 
+                    disabled={selectedTime === null}
+                    onClick={handleBookingConfirm}
+                    onMouseEnter={() => setIsHoveringBtn(true)}
+                    onMouseLeave={() => setIsHoveringBtn(false)}
+                    className="px-8 py-4 bg-white text-black font-black uppercase tracking-[0.2em] text-sm rounded-2xl hover:bg-cyan-400 hover:shadow-[0_0_30px_rgba(0,242,254,0.8)] transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:shadow-none"
+                  >
+                    Akceptuj
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+
